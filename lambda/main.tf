@@ -25,4 +25,3 @@ resource "aws_lambda_function" "get_data_lambda" {
       api_key = var.api_key
     }
   }
-}
