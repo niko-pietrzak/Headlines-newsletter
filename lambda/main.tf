@@ -1,4 +1,4 @@
-## LAMBDA
+## LAMBDA to take raw data
 data "archive_file" "lambda" {
   type        = "zip"
   source_file = "lambda_function.py"
@@ -25,4 +25,28 @@ resource "aws_lambda_function" "get_data_lambda" {
       api_key = var.api_key
     }
   }
+}
+
+
+## LAMBDA to email newsletter
+data "archive_file" "lambda_news" {
+  type        = "zip"
+  source_file = "lambda_email_newsletter.py"
+  output_path = "lambda_news_function_payload.zip"
+}
+
+resource "aws_lambda_function" "send_news_lambda" {
+  # If the file is not in the current working directory you will need to include a
+  # path.module in the filename.
+  filename      = "lambda_news_function_payload.zip"
+  function_name = "send_newsletter"
+  role          = var.lambda_news_role_arn
+  handler       = "lambda_email_newsletter.lambda_handler"
+
+  source_code_hash = data.archive_file.lambda_news.output_base64sha256
+
+  runtime = "python3.9"
+  timeout = "30"
+
+  layers = ["arn:aws:lambda:eu-central-1:336392948345:layer:AWSSDKPandas-Python39:6"]
 }
