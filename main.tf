@@ -25,6 +25,7 @@ module "lambda" {
   source = "./lambda"
 
   lambda_role_arn = module.iam.lambda_role_arn
+  lambda_news_role_arn = module.iam.lambda_news_role_arn
 }
 
 module "event_bridge" {

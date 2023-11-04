@@ -18,6 +18,12 @@ resource "aws_iam_role" "iam_for_lambda" {
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
 
+# Role for news lambda
+resource "aws_iam_role" "iam_for_news_lambda" {
+  name               = "iam_for_news_lambda"
+  assume_role_policy = data.aws_iam_policy_document.assume_role.json
+}
+
 # 3. Defining json policies for lambda
 data "aws_iam_policy_document" "lambda_logging" {
   statement {
