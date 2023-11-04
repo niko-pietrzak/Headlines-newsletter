@@ -118,17 +118,17 @@ resource "aws_iam_role_policy_attachment" "lambda_s3_writes" {
   policy_arn = aws_iam_policy.lambda_s3_write.arn
 }
 
-resource "aws_iam_role_policy_attachment" "lambda_s3_writes" {
+resource "aws_iam_role_policy_attachment" "news_lambda_logs" {
   role       = aws_iam_role.iam_for_news_lambda.name
   policy_arn = aws_iam_policy.lambda_logging.arn
 }
 
-resource "aws_iam_role_policy_attachment" "lambda_s3_writes" {
+resource "aws_iam_role_policy_attachment" "news_lambda_s3_writes" {
   role       = aws_iam_role.iam_for_news_lambda.name
   policy_arn = aws_iam_policy.lambda_s3_read.arn
 }
 
-resource "aws_iam_role_policy_attachment" "lambda_s3_writes" {
+resource "aws_iam_role_policy_attachment" "news_lambda_ses_send" {
   role       = aws_iam_role.iam_for_news_lambda.name
   policy_arn = aws_iam_policy.lambda_ses_send.arn
 }
