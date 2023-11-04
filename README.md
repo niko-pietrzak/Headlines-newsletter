@@ -12,3 +12,5 @@ Tools:
 - IaC (Terraform)
 - Python (boto3, pandas, requests)
 - News API (https://newsapi.org/)
+
+## TODO - add some extra comments to code
