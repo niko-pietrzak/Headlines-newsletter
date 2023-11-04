@@ -18,9 +18,9 @@ def get_current_week_key():
     
     return folder_key
 
-def send_email(DF, SENDER, RECIPIENT):
+def send_email(df, sender, recipent):
     # Convert DataFrame to HTML table
-    html_table = DF.to_html(classes='mystyle')
+    html_table = df.to_html(classes='mystyle')
     
     # Define your SES configuration
     AWS_REGION = 'eu-central-1'
@@ -72,7 +72,7 @@ def send_email(DF, SENDER, RECIPIENT):
     try:
         response = ses_client.send_email(
             Destination={
-                'ToAddresses': [RECIPIENT],
+                'ToAddresses': [recipent],
             },
             Message={
                 'Body': {
@@ -90,7 +90,7 @@ def send_email(DF, SENDER, RECIPIENT):
                     'Data': SUBJECT,
                 },
             },
-            Source=SENDER,
+            Source=sender,
         )
     except ClientError as e:
         print(e.response['Error']['Message'])
@@ -98,11 +98,31 @@ def send_email(DF, SENDER, RECIPIENT):
         print("Email sent! Message ID:"),
         print(response['MessageId'])
     
+def clean_filter_df(df):
+    # Filter the DataFrame
+    selected_words = ['iot', 'internet of things', 'industry', 
+                    'sensors', 'cloud', 'aws', 'car', 'automotive']  # Search words
+    selected_columns = ['title', 'description', 'content']   # Columns to check for selected words
+    filtered_df = df[df[selected_columns].apply(lambda x: x.str.contains('|'.join(selected_words), case=False)).all(axis=1)]
     
+    # Dropping rows with 'entertainment' and 'sport' in the 'category' column
+    filtered_df = filtered_df[~filtered_df['category'].isin(['entertainment', 'sport'])]
+
+
+    # Clean the DataFrame
+    columns_to_drop = ['author', 'sourceName', 'urlToImage', 'content', 'description', 'snapshotDate','country']
+    filtered_df = filtered_df.drop(columns_to_drop, axis = 1)
+
+    # Renaming columns to start with upper case
+    filtered_df.rename(columns=lambda x: x.capitalize(), inplace=True)
+
+    return filtered_df
+
+
 def lambda_handler(event, context):
 
+    # Take data from the last week from S3
     s3_client = boto3.client('s3')
-    
     news_bucket = 'news-data-lake'
     news_key = get_current_week_key()
     
@@ -124,24 +144,8 @@ def lambda_handler(event, context):
         df = pd.read_csv(obj['Body'])
         concatenated_data = pd.concat([concatenated_data, df], ignore_index=True)
     
-    # Filter the DataFrame
-    selected_words = ['iot', 'internet of things', 'industry', 
-                    'sensors', 'cloud', 'aws', 'car', 'automotive']  # Search words
-    selected_columns = ['title', 'description', 'content']   # Columns to check for selected words
-    filtered_df = concatenated_data[concatenated_data[selected_columns].apply(lambda x: x.str.contains('|'.join(selected_words), case=False)).all(axis=1)]
-    
-    # Dropping rows with 'entertainment' and 'sport' in the 'category' column
-    filtered_df = filtered_df[~filtered_df['category'].isin(['entertainment', 'sport'])]
-
-
-    # Clean the DataFrame
-    columns_to_drop = ['author', 'sourceName', 'urlToImage', 'content', 'description', 'snapshotDate','country']
-    filtered_df = filtered_df.drop(columns_to_drop, axis = 1)
-    # Renaming columns to start with upper case
-    filtered_df.rename(columns=lambda x: x.capitalize(), inplace=True)
-
-    # Send the dataframe via e-mail
-    send_email(filtered_df, 'nikodem4799@gmail.com', 'niko.j.pietrzak@gmail.com')
+    # Send the dataframe via e-mail, use clean_filter_df function
+    send_email(clean_filter_df(concatenated_data), 'nikodem4799@gmail.com', 'niko.j.pietrzak@gmail.com')
 
     return {
         'statusCode': 200,
