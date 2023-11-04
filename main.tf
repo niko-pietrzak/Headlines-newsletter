@@ -32,4 +32,5 @@ module "event_bridge" {
   source = "./event_bridge"
 
   lambda_arn = module.lambda.lambda_arn
+  lambda_news_arn = module.lambda.lambda_news_arn
 }
